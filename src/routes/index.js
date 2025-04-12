@@ -1,7 +1,7 @@
-import userRouter from "./UserRoutes.js";
+import usuarioRoutes from "./UsuarioRoutes.js";
 
 const routes = (app) => {
-    app.use(userRouter)
+    app.use(usuarioRoutes)
 }
 
 export default routes
