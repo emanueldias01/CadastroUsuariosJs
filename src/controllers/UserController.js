@@ -7,6 +7,9 @@ class UsuarioController{
     static getAllUsuarios = async (req, res, next) => {
         try{
 
+            const {pagina = 1, limite = 20} = req.query
+            const skip = (pagina - 1) * limite
+
             if (req.query.nome) {
                 const usuariosQuery = await prisma.usuario.findMany({
                   where: {
@@ -14,13 +17,18 @@ class UsuarioController{
                       startsWith: req.query.nome,
                       mode: 'insensitive'
                     }
-                  }
+                  },
+                  skip : skip,
+                  take : limite
                 });
 
                 res.status(200).json(usuariosQuery)
             }
 
-            const allUsers = await prisma.usuario.findMany()
+            const allUsers = await prisma.usuario.findMany({
+                skip : skip,
+                take : limite
+            })
             res.status(200).json(allUsers)
         }catch(erro){
             next(erro)
