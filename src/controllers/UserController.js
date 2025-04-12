@@ -6,6 +6,20 @@ const prisma = new PrismaClient()
 class UsuarioController{
     static getAllUsuarios = async (req, res, next) => {
         try{
+
+            if (req.query.nome) {
+                const usuariosQuery = await prisma.usuario.findMany({
+                  where: {
+                    nome: {
+                      startsWith: req.query.nome,
+                      mode: 'insensitive'
+                    }
+                  }
+                });
+
+                res.status(200).json(usuariosQuery)
+            }
+
             const allUsers = await prisma.usuario.findMany()
             res.status(200).json(allUsers)
         }catch(erro){
@@ -41,7 +55,7 @@ class UsuarioController{
             if(userFind === null){
                 res.status(404).json({mensagem : "Usuario não encontrado"})
             }
-            
+
             res.status(200).json(userFind)
         }catch(erro){
             next(erro)
