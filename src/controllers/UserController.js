@@ -1,35 +1,18 @@
 import pkg from '@prisma/client'
+import UsuarioService from '../services/UsuarioService.js'
 const { PrismaClient } = pkg
 
 const prisma = new PrismaClient()
 
+const service = new UsuarioService(prisma)
 class UsuarioController{
+
+    
+
     static getAllUsuarios = async (req, res, next) => {
         try{
-
-            const {pagina = 1, limite = 20} = req.query
-            const skip = (pagina - 1) * limite
-
-            if (req.query.nome) {
-                const usuariosQuery = await prisma.usuario.findMany({
-                  where: {
-                    nome: {
-                      startsWith: req.query.nome,
-                      mode: 'insensitive'
-                    }
-                  },
-                  skip : skip,
-                  take : limite
-                });
-
-                res.status(200).json(usuariosQuery)
-            }
-
-            const allUsers = await prisma.usuario.findMany({
-                skip : skip,
-                take : limite
-            })
-            res.status(200).json(allUsers)
+            const allUsuarios = await service.getAllUsuarios(req.nome)
+            res.status(200).json(allUsuarios)
         }catch(erro){
             next(erro)
         }
@@ -37,15 +20,8 @@ class UsuarioController{
 
     static createUsuario = async (req, res, next) => {
         try{
-            await prisma.usuario.create({
-                data:{
-                    nome : req.body.nome,
-                    email : req.body.email,
-                    telefone : req.body.telefone
-                }
-            })
-    
-            res.status(201).json(req.body)
+            const usuario = await service.createUsuario(req.body)
+            res.status(201).json(usuario)
         }catch(erro){
             next(erro)
         }
@@ -53,35 +29,18 @@ class UsuarioController{
 
     static getUsuarioById = async (req, res, next) => {
         try{
-            const id = req.params.id
-            const userFind = await prisma.usuario.findFirst({
-                where : {
-                    id : parseInt(id)
-                    }
-                })
-
-            if(userFind === null){
-                res.status(404).json({mensagem : "Usuario não encontrado"})
-            }
-
-            res.status(200).json(userFind)
+            const usuario = await service.getUsuarioById(req.params.id)
+            res.status(200).json(usuario)
         }catch(erro){
-            next(erro)
+            if(erro.message === "User Not Found") res.status(404).json({mensagem : erro.message})
+            else throw erro
         }
     }
 
     static updateUsuario = async (req, res, next) => {
         try{
-            const { id, nome, email, telefone } = req.body
-
-            await prisma.usuario.update({
-                where : {
-                id : parseInt(id)
-            },
-                data : {nome, email, telefone}
-            })
-
-            res.status(200).json(req.body)
+            const usuario = await service.updateUsuario(req.body)
+            res.status(200).json(usuario)
         }catch(erro){
             next(erro)
         }
@@ -89,14 +48,8 @@ class UsuarioController{
 
     static deleteUsuario = async (req, res, next) => {
         try{
-            const id = req.params.id
-            await prisma.usuario.delete({
-                where : {
-                    id : parseInt(id)
-                }
-            })
-
-            res.status(204).json()
+            await service.deleteUsuario(req.params.id)
+            res.status(204).send()
         }catch(erro){
             next(erro)
         }
